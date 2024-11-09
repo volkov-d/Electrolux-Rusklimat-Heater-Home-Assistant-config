@@ -7,9 +7,9 @@ Redirect all mqtt://mqtt.cloud.rusklimat.ru:8883/ requests to your local Home As
 
 Find and replace following tags with real values in the yaml configuration:
 
- ~~ <DEVICE NAME> ~~
- ~~ <MAC ADDRES> ~~
- ~~ <TOKEN> ~~
+ *<DEVICE NAME>*
+ *<MAC ADDRES>*
+ *<TOKEN>*
 
 Include it in configuration.yaml or just copy/past.
 
