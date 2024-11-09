@@ -1,0 +1,276 @@
+#
+# Electrolux Air Gate DI 4.0 configuration for Home Assistant mqtt integration
+# 
+# Redirect all mqtt://mqtt.cloud.rusklimat.ru:8883/ requests to your local SSL MQTT server. You could use your local static DNS record for that.
+# Find and replace following tags with real values:
+#
+# <DEVICE NAME>
+# <MAC ADDRES>
+# <TOKEN>
+#
+mqtt:
+  - climate:
+      name: "<Device name>"
+      device:
+        identifiers: <MAC ADDRES>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      unique_id: "electrolux_<MAC ADDRESS>"
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+      retain: true
+      precision: 0.1
+      preset_modes:
+        - "comfort"
+        - "eco"
+        - "away"
+        
+      modes: 
+        - "off"
+        - "heat"
+      min_temp: 5
+      max_temp: 35
+
+      current_temperature_topic: "rusclimate/46/<TOKEN>/state/sensor/temperature"
+      temperature_state_topic: "rusclimate/46/<TOKEN>/state/temperature"
+      temperature_command_topic: "rusclimate/46/<TOKEN>/control/temperature"
+      temperature_command_template: >
+        {{value | int}}
+        
+      preset_mode_state_topic: "rusclimate/46/<TOKEN>/state/mode"
+      preset_mode_command_topic: "rusclimate/46/<TOKEN>/control/mode"
+      preset_mode_value_template: >
+        {% if value == "3" %}
+            away
+        {% elif value == "2" %}
+            eco
+        {% elif value == "1" %}
+            comfort
+        {% else %}
+            none
+        {% endif %}
+      preset_mode_command_template: >
+        {% if value == "away" %}
+            {{ 3 }}
+        {% elif value == "eco" %}
+            {{ 2 }}
+        {% elif value == "comfort" %}
+            {{ 1 }}
+        {% else %}
+            {{ 0 }}
+        {% endif %}
+
+      mode_state_topic: "rusclimate/46/<TOKEN>/state/mode"
+      mode_command_topic: "rusclimate/46/<TOKEN>/control/mode"
+      mode_state_template: >
+        {% if value == "0" %}
+          off
+        {% else %}
+          heat
+        {% endif %}
+      mode_command_template: >
+        {% if value == "off" %}
+          {{ 0 }}
+        {% else %}
+          {{ 1 }}
+        {% endif %}
+        
+      action_topic: "rusclimate/46/<TOKEN>/state/program_data/0"
+      action_template: >
+        {% if value == "000000" %}
+          idle
+        {% else %}
+          heating
+        {% endif %}
+        
+  - number:
+      name: "Установка мощьности нагрева (0 - авто режим)"
+      unique_id: "electrolux_<MAC ADDRESS>_heater_power"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      retain: true
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+      min: 0
+      max: 10
+      mode: slider
+      step: 1
+      state_topic: "rusclimate/46/<TOKEN>/state/speed"
+      command_topic: "rusclimate/46/<TOKEN>/control/speed"
+      value_template: >
+          {{ value | int}}
+      icon: mdi:lightning-bolt-outline
+      
+  - sensor:
+      name: "Текущая мощьность"
+      unique_id: "ectrolux_<MAC ADDRESS>_heater_power"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+      state_topic: "rusclimate/46/<TOKEN>/state/program_data/0"
+      value_template: >
+          {{ value[1] | int(base=16)}}        
+      icon: mdi:heat-wave
+      
+  - switch:
+      name: "Подсветка дисплея"
+      unique_id: "ectrolux_<MAC ADDRESS>_backlight"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      icon: mdi:brightness-6
+      retain: true
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+      state_topic: "rusclimate/46/<TOKEN>/state/backlight"
+      command_topic: "rusclimate/46/<TOKEN>/control/backlight"
+      payload_on: "1"
+      payload_off: "0"
+      state_on: "1"
+      state_off: "0"
+      
+  - switch:
+      name: "Звук кнопок"
+      unique_id: "ectrolux_<MAC ADDRESS>_volume"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      state_topic: "rusclimate/46/<TOKEN>/state/volume"
+      command_topic: "rusclimate/46/<TOKEN>/control/volume"
+      payload_on: "1"
+      payload_off: "0"
+      icon: mdi:volume-high
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+
+  - switch:
+      name: "Блокировка от детей"
+      unique_id: "ectrolux_<MAC ADDRESS>_child_lock"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      state_topic: "rusclimate/46/<TOKEN>/state/child_lock"
+      command_topic: "rusclimate/46/<TOKEN>/control/child_lock"
+      payload_on: "true"
+      payload_off: "false"
+      icon: mdi:lock
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+
+  - switch:
+      name: "Обнаружение открытого окна"
+      unique_id: "ectrolux_<MAC ADDRESS>_damper"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      state_topic: "rusclimate/46/<TOKEN>/state/damper"
+      command_topic: "rusclimate/46/<TOKEN>/control/damper"
+      payload_on: "true"
+      payload_off: "false"
+      icon: mdi:window-closed-variant
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"      
+
+  - number:
+      name: "Температура в режиме \"Не дома\"" 
+      unique_id: "electrolux_<MAC ADDRESS>_heater_away_temperature"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      retain: true
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+      min: 3
+      max: 7
+      mode: slider
+      step: 1
+      state_topic: "rusclimate/46/<TOKEN>/state/program_data/3"
+      command_topic: "rusclimate/46/<TOKEN>/control/program_data/3"
+      value_template: >
+          {{ value | int}}
+      command_template: >
+        0{{value}}
+        
+      icon: mdi:snowflake-thermometer
+
+  - number:
+      name: "Разница температур в режиме ECO" 
+      unique_id: "electrolux_<MAC ADDRESS>_heater_eco_delta_temperature"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      retain: true
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+      min: 3
+      max: 7
+      mode: slider
+      step: 1
+      state_topic: "rusclimate/46/<TOKEN>/state/program_data/2"
+      command_topic: "rusclimate/46/<TOKEN>/control/program_data/2"
+      value_template: >
+          {{ value | int}}
+      command_template: >
+        0{{value}}
+      icon: mdi:sprout
+
+  - switch:
+      name: "Автоотключение дисплея "
+      unique_id: "ectrolux_<MAC ADDRESS>_dimmer"
+      device:
+        identifiers: <MAC ADDRESS>
+        manufacturer: Rusklimat
+        name: Electrolux Heater 
+        model: Electrolux Air Gate Transformer DI 4.0
+      state_topic: "rusclimate/46/<TOKEN>/state/program_data/0"
+      command_topic: "rusclimate/46/<TOKEN>/control/program_data/0"
+      payload_on: "000100"
+      payload_off: "000000"
+      value_template: >
+          000{{ value[3] }}00
+      icon: mdi:television-ambient-light
+      availability:
+          - topic: "rusclimate/46/<TOKEN>/state/error/connection"
+            payload_available: "false"
+            payload_not_available: "true"
+            
+
+
