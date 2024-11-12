@@ -80,7 +80,7 @@ mqtt:
         
       action_topic: "rusclimate/46/<TOKEN>/state/program_data/0"
       action_template: >
-        {% if value == "000000" %}
+        {% if value[1] == "0" %}
           idle
         {% else %}
           heating
